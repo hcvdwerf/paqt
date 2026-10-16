@@ -1,0 +1,38 @@
+<Solution>
+  <Folder Name="/opdrachten/" />
+  <Folder Name="/opdrachten/01-fizzbuzz/" />
+  <Folder Name="/opdrachten/01-fizzbuzz/src/">
+    <Project Path="opdrachten/01-fizzbuzz/src/FizzBuzz.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/01-fizzbuzz/tests/">
+    <Project Path="opdrachten/01-fizzbuzz/tests/FizzBuzz.Tests.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/02-verzamelingen/" />
+  <Folder Name="/opdrachten/02-verzamelingen/src/">
+    <Project Path="opdrachten/02-verzamelingen/src/Collections.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/02-verzamelingen/tests/">
+    <Project Path="opdrachten/02-verzamelingen/tests/Collections.Tests.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/03-volledige-weken/" />
+  <Folder Name="/opdrachten/03-volledige-weken/src/">
+    <Project Path="opdrachten/03-volledige-weken/src/FullWeeks.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/03-volledige-weken/tests/">
+    <Project Path="opdrachten/03-volledige-weken/tests/FullWeeks.Tests.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/04-wmo/" />
+  <Folder Name="/opdrachten/04-wmo/src/">
+    <Project Path="opdrachten/04-wmo/src/Wmo.Api/Wmo.Api.csproj" />
+    <Project Path="opdrachten/04-wmo/src/Wmo.Application/Wmo.Application.csproj" />
+    <Project Path="opdrachten/04-wmo/src/Wmo.Domain/Wmo.Domain.csproj" />
+    <Project Path="opdrachten/04-wmo/src/Wmo.Infrastructure/Wmo.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/04-wmo/tests/" />
+  <Folder Name="/opdrachten/04-wmo/tests/Integration/">
+    <Project Path="opdrachten/04-wmo/tests/Integration/Wmo.Integration.csproj" />
+  </Folder>
+  <Folder Name="/opdrachten/04-wmo/tests/Unit/">
+    <Project Path="opdrachten/04-wmo/tests/Unit/Wmo.Unit.csproj" />
+  </Folder>
+</Solution>

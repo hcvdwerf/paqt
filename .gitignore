@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+.local/
+artifacts/
+**/node_modules/
+**/playwright-report/
+**/test-results/
+architecture/workspace.json
+architecture/.structurizr/
+.DS_Store
+.idea/

@@ -1,0 +1,7 @@
+**/bin
+**/obj
+.git
+.local
+artifacts
+**/node_modules
+architecture

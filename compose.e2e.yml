@@ -1,0 +1,6 @@
+# Alleen gebruiken met projectnaam paqt-tests; geen hostpoorten en eigen datavolume.
+services:
+  keycloak:
+    ports: !reset []
+  kong:
+    ports: !reset []
