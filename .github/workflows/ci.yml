@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRIVY_IMAGE: aquasec/trivy:0.67.2
+
+jobs:
+  container-scan:
+    name: Container bouwen en scannen
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: API-image bouwen
+        run: docker compose build api
+      - name: Image scannen op kwetsbaarheden en secrets
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$RUNNER_TEMP/trivy:/root/.cache" \
+            "$TRIVY_IMAGE" image --scanners vuln,secret --severity HIGH,CRITICAL --ignore-unfixed \
+            --exit-code 1 --no-progress paqt-wmo:local
+      - name: Afhankelijkheden en configuratie scannen
+        run: |
+          docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/trivy:/root/.cache" \
+            "$TRIVY_IMAGE" fs --scanners vuln,secret --severity HIGH,CRITICAL --ignore-unfixed \
+            --exit-code 1 --no-progress --skip-dirs /src/.local /src
+
+  tests:
+    name: Unit-, integratie- en Playwright-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Alle tests draaien
+        run: ./scripts/test.sh
+      - name: Testresultaten bewaren
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: testresultaten
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
