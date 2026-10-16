@@ -31,12 +31,13 @@ Docker Scout v1.24.0 onderzocht de volgende images op door de scanner als HIGH o
 | Wmo-applicatie | 0 | 0 | `artifacts/scans/wmo-image.sarif` |
 | Kong 3.9.4 | 0 | 0 | `artifacts/scans/kong-image.sarif` |
 | Keycloak 26.8.1 | 11 | 1 | `artifacts/scans/keycloak-image.sarif` |
-| PostgreSQL 17-alpine | 32 | 4 | `artifacts/scans/postgres-image.sarif` |
+| PostgreSQL 17-alpine (officieel, onaangepast) | 32 | 4 | `artifacts/scans/postgres-image.sarif` |
+| PostgreSQL 17-alpine (eigen build `infra/Dockerfile.postgres`) | 0 | 0 | Trivy 0.67.2, lokaal uitgevoerd (geen SARIF bewaard) |
 
 ### Open upstreambevindingen
 
-- Keycloak: 12 bevindingen in de onderliggende RPM-pakketten acl, attr, glibc, pcre2, sqlite en zlib. De scanner meldt hiervoor `not fixed`. De officiële downloadpagina is gecontroleerd en versie 26.8.1 is gebruikt.
-- PostgreSQL: 36 bevindingen in meegeleverde Go-stdlib (gosu-helper), libxml2 en zlib. Voor een deel zijn fixversies bekend. De officiële tag `postgres:17-alpine` is opnieuw gepulld en verwees naar dezelfde gepinde digest; er is binnen deze uitvoering geen nieuwere officiële taginhoud aangetroffen. De packagebevindingen zijn niet als onbereikbaar of vals-positief afgedaan.
+- Keycloak: 12 bevindingen in de onderliggende RPM-pakketten acl, attr, glibc, pcre2, sqlite en zlib. De scanner meldt hiervoor `not fixed`. Trivy 0.67.2 vond op dezelfde image 0 HIGH/CRITICAL; dit is een ander resultaat dan Docker Scout. Zonder upstream-fix is dit niet door het project op te lossen. De officiële downloadpagina is gecontroleerd en versie 26.8.1 is gebruikt.
+- PostgreSQL: de bevindingen zaten uitsluitend in de meegeleverde `gosu`-binary (verouderde Go-stdlib). `infra/Dockerfile.postgres` vervangt die door `su-exec` uit Alpine en levert een platte image, zodat de oude binary niet in een verborgen laag achterblijft. De Compose-stack gebruikt deze build; alle 46 tests slaagden daarna en de demo startte op het bestaande datavolume. De tabelregel van de onaangepaste officiële image blijft als historisch Docker Scout-bewijs. Trivy en Docker Scout kunnen verschillen in bevindingen: Scout is niet opnieuw uitgevoerd op de eigen build. Oorspronkelijke analyse: 36 bevindingen in meegeleverde Go-stdlib (gosu-helper), libxml2 en zlib. Voor een deel zijn fixversies bekend. De officiële tag `postgres:17-alpine` is opnieuw gepulld en verwees naar dezelfde gepinde digest; er is binnen deze uitvoering geen nieuwere officiële taginhoud aangetroffen. De packagebevindingen zijn niet als onbereikbaar of vals-positief afgedaan.
 - Dit blijft een lokale demonstratie met fictieve gegevens en uitsluitend loopbacktoegang. Er is geen productie-securityvrijgave. Voor productie zijn herbeoordeling, geactualiseerde images of een onderbouwde alternatieve build en risicoacceptatie door de bevoegde eigenaar nodig.
 - De overige toolingimages (SDK, Node-testrunner, bootstrap en Structurizr) vallen buiten deze runtime-imagescan. Licentieacceptatie, complete SAST, pentest, load-/failover-/hersteltests en formele CIZ-toetsing zijn niet uitgevoerd.
 

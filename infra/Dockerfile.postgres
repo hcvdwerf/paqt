@@ -1,0 +1,16 @@
+FROM postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24 AS base
+# De meegeleverde gosu is gebouwd met een verouderde Go-stdlib; su-exec (C) heeft dezelfde aanroep en geen Go-runtime.
+RUN apk add --no-cache su-exec && rm /usr/local/bin/gosu && ln -s /sbin/su-exec /usr/local/bin/gosu
+
+# Platte kopie zodat de oude gosu-binary niet als verborgen laag in de image blijft.
+FROM scratch
+COPY --from=base / /
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+    LANG=en_US.utf8 \
+    PG_MAJOR=17 \
+    PGDATA=/var/lib/postgresql/data
+VOLUME /var/lib/postgresql/data
+EXPOSE 5432
+STOPSIGNAL SIGINT
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["postgres"]

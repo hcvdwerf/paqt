@@ -29,6 +29,11 @@ jobs:
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$RUNNER_TEMP/trivy:/root/.cache" \
             "$TRIVY_IMAGE" image --scanners vuln,secret --severity HIGH,CRITICAL --ignore-unfixed \
             --exit-code 1 --no-progress paqt-wmo:local
+      - name: PostgreSQL-image bouwen en scannen
+        run: |
+          docker compose build postgres
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v "$RUNNER_TEMP/trivy:/root/.cache" \
+            "$TRIVY_IMAGE" image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --no-progress paqt-postgres:local
       - name: Afhankelijkheden en configuratie scannen
         run: |
           docker run --rm -v "$PWD:/src:ro" -v "$RUNNER_TEMP/trivy:/root/.cache" \

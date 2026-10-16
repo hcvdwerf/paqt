@@ -30,7 +30,10 @@ services:
       - ./.local:/local
     network_mode: none
   postgres:
-    image: postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24
+    build:
+      context: .
+      dockerfile: infra/Dockerfile.postgres
+    image: paqt-postgres:local
     entrypoint: [sh, /bootstrap/postgres-start.sh]
     environment:
       POSTGRES_PASSWORD_FILE: /secrets/postgres-password
