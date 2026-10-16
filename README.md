@@ -178,6 +178,15 @@ Dit draait unittests en bouwt vervolgens een **afzonderlijke wegwerpstack `paqt-
 
 Rapporten staan in `artifacts/unit`, `artifacts/integration` en `artifacts/playwright`. Traces staan uit zodat bearer tokens niet in tracebestanden terechtkomen. Testresultaten en beperkingen staan in [docs/verificatie.md](docs/verificatie.md).
 
+### Continuous integration
+
+De GitHub Actions-workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) draait bij elke push naar `main` en bij pull requests:
+
+- **Container bouwen en scannen:** `docker compose build api`, daarna Trivy op de API-image en op de repository (afhankelijkheden en secrets). De job faalt bij HIGH- of CRITICAL-bevindingen waarvoor een fix beschikbaar is.
+- **Tests:** `./scripts/test.sh` (unit-, integratie- en Playwright-tests tegen de wegwerpstack met Keycloak en Kong). De rapporten worden zeven dagen als artefact bewaard.
+
+De workflow is nog niet op GitHub uitgevoerd; lokaal zijn de image-build en de Trivy-scans gecontroleerd. De misconfig-scan van Trivy is niet opgenomen: die meldt dat de Playwright-testimage als root draait.
+
 ## Beheer en configuratie
 
 ```sh
