@@ -132,7 +132,7 @@ Bewoners-ID's eindigen op `000000000001` t/m `000000000007`: 1 Noord, 2 Zuid, 3 
 
 ### Fouten en gateway
 
-API-fouten gebruiken Problem Details met stabiele `code` en `correlationId`, ook in header `X-Correlation-ID`. Invoerfouten geven 400, ontbrekende/ongeldige tokens 401, onvoldoende rechten 403, onbekende bewoners 404 en conflicterende bedrijfsregels 409. Tijdelijke opslaguitval geeft 503. Stacktraces en opslagdetails worden niet aan clients teruggegeven.
+API-fouten gebruiken Problem Details met stabiele `code` (snake_case, afgeleid van de domeinfout-enum `DomainError`) en `correlationId`, ook in header `X-Correlation-ID`. Invoerfouten geven 400, ontbrekende/ongeldige tokens 401, onvoldoende rechten 403, onbekende bewoners 404 en conflicterende bedrijfsregels 409. Tijdelijke opslaguitval geeft 503. Stacktraces en opslagdetails worden niet aan clients teruggegeven.
 
 Kong beperkt API-verkeer tot 600 verzoeken per minuut per bron-IP en maximaal 64 KiB requestbody. Het limiet is lokaal per gateway-instance en bedoeld voor deze demonstratie. Timeouts zijn begrensd; automatisch opnieuw uitvoeren van boekingen staat uit. Kong valideert het upstream-certificaat. Gatewayfouten (zoals 413 en 429) volgen het standaard Kong-foutformaat; ze zijn onderscheiden van het Problem Details-contract van de applicatie.
 
@@ -173,7 +173,7 @@ Er zijn geen ongebruikte geldkolommen of betalingsfunctionaliteit aan deze kilom
 Dit draait unittests en bouwt vervolgens een **afzonderlijke wegwerpstack `paqt-tests`** zonder hostpoorten. Integratietests gebruiken uitsluitend `wmo_test`; Playwright gebruikt de fictieve Wmo-database in die teststack. Bij afloop wordt alleen het testproject inclusief zijn datavolume verwijderd. De demo onder projectnaam `paqt` blijft behouden.
 
 - Unittests: algoritmen, budgetten, schrikkeldagen, stopzetting, grensdatums en architectuurafhankelijkheden.
-- PostgreSQL-integratietests: migraties, persistentie, vervoerdersselectie, transactie-rollback, row-lock-concurrentie, dubbele reset en beperkte audit-/DDL-rechten.
+- PostgreSQL-integratietests: migraties, persistentie, vervoerdersselectie, transactie-rollback, row-lock-concurrentie, dubbele reset en beperkte audit-/DDL-rechten. De rechten van het runtime-account (`wmo`) worden door de EF Core-migratie `RuntimePermissions` ingesteld; de migratie draait onder `wmo_owner` via `--migrate --seed-demo` in de `migrate`-service.
 - Playwright API-tests: echte Keycloak-tokens, alle API-handelingen via Kong, paginering, afschrijving, bedrijfsafscherming, negatieve token-/roltests, veilige foutresponses en gatewaylimieten. Dit zijn HTTP-tests zonder browser of screenshots.
 
 Rapporten staan in `artifacts/unit`, `artifacts/integration` en `artifacts/playwright`. Traces staan uit zodat bearer tokens niet in tracebestanden terechtkomen. Testresultaten en beperkingen staan in [docs/verificatie.md](docs/verificatie.md).
