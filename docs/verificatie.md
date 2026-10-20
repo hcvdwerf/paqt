@@ -46,3 +46,7 @@ De oudere NuGet-baseline gaf aanvankelijk kwetsbaarheidsmeldingen. De implementa
 ## Uitbreiding Swagger UI
 
 De standaard Swagger UI is beschikbaar achter Kong en laadt een publiek OpenAPI-contract met Bearer-authenticatie en een relatieve gateway-URL. Alleen het contract is publiek; API-aanroepen blijven geautoriseerd. De Playwright-controle dekt de UI-/asset-routes, het contract en de afwijzing van een anonieme API-aanroep. Ook de actieve demo is opnieuw gebouwd en gestart.
+
+## CI-teststabiliteit (20 oktober 2026)
+
+De GitHub Actions-run op commit `f5440fd` faalde in vier Playwright-tests: drie Keycloak-tokenaanvragen kregen HTTP 500 tijdens de startfase en één controle las de budgetperiode voordat de achtergrondvernieuwing klaar was. De tokenhelper probeert tijdelijke serverfouten nu begrensd opnieuw. De controle van de achtergrondtaak wacht maximaal 10 seconden op de vernieuwde periode. Na deze wijziging slaagde `./scripts/test.sh` lokaal: 30 unit-, 7 PostgreSQL-integratie- en 9 Playwright-tests, in totaal 46. De GitHub-rerun volgt op de commit van deze correctie.
