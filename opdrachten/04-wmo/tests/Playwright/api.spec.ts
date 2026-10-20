@@ -88,11 +88,10 @@ test('onvoldoende saldo en gelijktijdige boekingen behouden consistent budget', 
 test('achterstallige reset wordt ingehaald en herhaling vult verbruik niet opnieuw aan', async () => {
   const api = await client('callcenter');
   const renewal = await client('renewal');
-  await expect.poll(async () => {
-    const response = await api.get('/api/v1/residents');
-    const permit = (await response.json()).items.find((r: any) => r.id === resident(5)).budget;
-    return new Date(permit.periodEnd).getTime();
-  }, { timeout: 10000 }).toBeGreaterThan(Date.now());
+  expect((await renewal.post('/api/v1/budget-renewals')).status()).toBe(200);
+  const response = await api.get('/api/v1/residents');
+  const permit = (await response.json()).items.find((r: any) => r.id === resident(5)).budget;
+  expect(new Date(permit.periodEnd).getTime()).toBeGreaterThan(Date.now());
   const before = await balance(api, resident(5));
   expect((await api.post(`/api/v1/residents/${resident(5)}/trips`, { data: booking(1) })).status()).toBe(201);
   for (let i = 0; i < 2; i++) expect((await renewal.post('/api/v1/budget-renewals')).status()).toBe(200);
