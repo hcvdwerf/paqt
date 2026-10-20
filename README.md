@@ -123,6 +123,22 @@ Paginering is stabiel gesorteerd, standaard 50 en maximaal 100 items. Responses 
 
 Clients: `callcenter`, `carrier-a`, `carrier-b`, `renewal`. De bootstrap maakt daarnaast drie negatieve testclients. Secrets worden lokaal gegenereerd en staan onder de genegeerde map `.local/`. Beheerlogin voor Keycloak is `local-admin`; het lokale wachtwoord staat in `.local/secrets/keycloak-admin-password`. Publiceer deze bestanden niet.
 
+### Access-token ophalen
+
+Start eerst de demo met `./scripts/start.sh`. Haal daarna een token op voor de clientrol die je wilt testen. Voer dit vanuit de projectmap uit; het commando toont alleen het token en leest het bijbehorende secret uit `.local/`:
+
+```sh
+client=callcenter # kies: callcenter, carrier-a, carrier-b of renewal
+curl --silent --show-error --fail --cacert .local/certs/ca.crt \
+  https://localhost:8444/realms/paqt/protocol/openid-connect/token \
+  --data-urlencode grant_type=client_credentials \
+  --data-urlencode "client_id=$client" \
+  --data-urlencode "client_secret@.local/client-secrets/$client-secret" \
+  | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])'
+```
+
+Verander `client` in `carrier-a`, `carrier-b` of `renewal` om een token voor die client te krijgen. Kopieer de uitvoer naar **Authorize** in Swagger. Plak alleen het access-token; Swagger voegt zelf het `Bearer`-schema toe. Gebruik `callcenter` voor bewoners en boeken, een vervoerderclient voor alleen de eigen ritten, en `renewal` voor budgetverlengingen. Tokens verlopen; voer het commando opnieuw uit als Swagger een `401` teruggeeft.
+
 ### Swagger UI
 
 Open https://localhost:8443/swagger/index.html. De lokale CA moet door je browser worden vertrouwd; de applicatie installeert geen certificaten op je computer. Swagger gebruikt de standaard-UI en laadt het publieke machineleesbare contract van `/openapi/v1.json`. Dat contract beschrijft alleen routes, schemas en autorisatie; het bevat geen bewonersgegevens.
@@ -133,16 +149,9 @@ Swagger UI staat standaard uit (`Swagger__Enabled=false`) en wordt alleen door d
 
 ### Voorbeeldverzoek
 
-Vanuit de projectmap, met `curl` en Python 3 voor het uitlezen van JSON:
+Met het `callcenter`-token uit de vorige sectie kun je ook buiten Swagger een verzoek doen:
 
 ```sh
-TOKEN=$(curl --silent --show-error --fail --cacert .local/certs/ca.crt \
-  https://localhost:8444/realms/paqt/protocol/openid-connect/token \
-  --data-urlencode grant_type=client_credentials \
-  --data-urlencode client_id=callcenter \
-  --data-urlencode client_secret@.local/client-secrets/callcenter-secret \
-  | python3 -c 'import sys,json; print(json.load(sys.stdin)["access_token"])')
-
 curl --cacert .local/certs/ca.crt -H "Authorization: Bearer $TOKEN" \
   https://localhost:8443/api/v1/residents
 ```
