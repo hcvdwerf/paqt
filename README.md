@@ -45,6 +45,37 @@ Met een lokale .NET 10 SDK kan ook `dotnet run --project opdrachten/01-fizzbuzz/
 - Volledige weken gebruikt inclusieve datumgrenzen en een week van maandag t/m zondag. Alleen de maandag van volledig ingesloten weken wordt teruggegeven. Datums hebben formaat `yyyy-MM-dd`.
 - Ongeldige invoer geeft een foutmelding op stderr en exitcode 1.
 
+### Voorbeeldinvoer en uitkomsten
+
+De consoleopdrachten lezen hun invoer uit argumenten na het commando. Deze voorbeelden tonen precies wat je meegeeft en wat het programma teruggeeft:
+
+| Opdracht | Invoer | Uitkomst |
+|---|---|---|
+| 1 — FizzBuzz | `./scripts/exercise.sh 1 1 15` (start 1, einde 15) | Eén regel per getal: `1`, `2`, `Fizz`, `4`, `Buzz`, `Fizz`, `7`, `8`, `Fizz`, `Buzz`, `11`, `Fizz`, `13`, `14`, `FizzBuzz`. |
+| 2 — Verzamelingen | `./scripts/exercise.sh 2 '1,2,3,4,5,6,7,8,9,10' 3` (getallen, groepsgrootte 3) | `[[1,2,3],[4,5,6],[7,8,9],[10]]` als JSON; de laatste groep mag kleiner zijn. |
+| 3 — Volledige weken | `./scripts/exercise.sh 3 2026-10-01 2026-10-31` (begindatum, einddatum) | `2026-10-05`, `2026-10-12` en `2026-10-19`, elk op een eigen regel. Alleen weken waarvan maandag én zondag binnen het bereik vallen tellen mee. |
+
+Voor de Wmo-API voer je HTTP-verzoeken uit met een Keycloak-access-token. Swagger toont dezelfde invoervelden en responses op https://localhost:8443/swagger/index.html. Dit zijn de hoofdverzoeken:
+
+| Verzoek | Invoer | Uitkomst |
+|---|---|---|
+| `GET /api/v1/residents?page=1&pageSize=50` (rol `callcenter`) | Geen requestbody; optionele paginanummering. | Pagina met fictieve bewoners (`items`, `pageNumber`, `pageSize`, `totalCount`), met huidig kilometerbudget als dat bestaat. |
+| `POST /api/v1/residents/{residentId}/trips` (rol `callcenter`) | `departureAt` met tijdzone-offset, `destinationAddress` en positieve `distanceKilometers` met maximaal 3 decimalen. | `201 Created` met rit-ID, bewoner, toegewezen vervoerder, adressen, vertrektijd en afstand. Het kilometerbudget wordt in dezelfde transactie verlaagd. |
+| `GET /api/v1/trips?page=1&pageSize=50` (rol `carrier`) | Geen requestbody; vervoerders-ID komt uit het ondertekende token. | Alleen de ritten van die vervoerder, als gepagineerde lijst. |
+| `POST /api/v1/budget-renewals` (rol `renewal`) | Geen requestbody; de datum komt van de systeemklok. | `{"renewed": aantal}` met het aantal verlengde budgetperioden. |
+
+Voorbeeldinvoer voor een ritboeking (bewoner-ID 2 is fictieve demo-invoer):
+
+```json
+{
+  "departureAt": "2026-10-17T10:00:00Z",
+  "destinationAddress": "Fictief reisplein 10, Utrecht",
+  "distanceKilometers": 12.125
+}
+```
+
+Ongeldige invoer of een regelconflict geeft een HTTP-fout met Problem Details, een stabiele `code` en `correlationId`. Een niet-bestaande bewoner geeft bijvoorbeeld 404, onvoldoende budget 409 en een ontbrekend token 401. De details en een volledig curl-voorbeeld staan verderop bij [API-contract en autorisatie](#api-contract-en-autorisatie) en [Voorbeeldverzoek](#voorbeeldverzoek).
+
 ## Architectuur en SOLID
 
 ```text
@@ -165,6 +196,19 @@ Bij een toekomstige uitbreiding met geld geldt als ontwerpafspraak:
 Er zijn geen ongebruikte geldkolommen of betalingsfunctionaliteit aan deze kilometercasus toegevoegd.
 
 ## Testen
+
+Voor een snelle, losse controle van één opdracht heb je alleen Docker nodig. Het script bouwt zo nodig de vastgepinde .NET-testimage en draait alleen de gekozen tests:
+
+```sh
+./scripts/test-opdracht.sh 1          # FizzBuzz
+./scripts/test-opdracht.sh 2          # Verzamelingen verdelen
+./scripts/test-opdracht.sh 3          # Volledige weken
+./scripts/test-opdracht.sh wmo-unit   # Wmo-unit- en architectuurtests
+```
+
+Met de gepinde .NET 10 SDK kun je opdracht 1 t/m 3 ook rechtstreeks testen, bijvoorbeeld `dotnet test opdrachten/01-fizzbuzz/tests`. Vervang het pad door `opdrachten/02-verzamelingen/tests` of `opdrachten/03-volledige-weken/tests` voor de andere opdrachten.
+
+Voor alle controles, inclusief PostgreSQL-integratie en API-tests via Keycloak en Kong, gebruik je:
 
 ```sh
 ./scripts/test.sh
